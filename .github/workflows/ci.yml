@@ -53,9 +53,6 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
       - name: Run the tests and save the output
         run: npm test > test-output.txt
 
