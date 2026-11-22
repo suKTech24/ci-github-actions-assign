@@ -1,0 +1,24 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Make a file to attach
+        run: echo "Release built by GitHub Actions" > release-notes.txt
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" release-notes.txt \
+            --title "$GITHUB_REF_NAME" \
+            --notes "Created automatically."

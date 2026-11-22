@@ -29,6 +29,7 @@ concurrency:
 
 jobs:
   lint:
+    timeout-minutes: 5
     runs-on: ubuntu-22.04
     outputs:
       build_id: ${{ steps.make_id.outputs.build_id }}
