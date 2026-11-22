@@ -1,0 +1,19 @@
+name: Warm-Up A (Broken Pipeline Demo)
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  first-job:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Say hello
+        run: echo "Hello from the first job"
+
+  second-job:
+    needs: first-job
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Say goodbye
+        run: echo "Goodbye from the second job"
