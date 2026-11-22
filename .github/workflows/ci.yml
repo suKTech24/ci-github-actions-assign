@@ -5,6 +5,21 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Where should we deploy?'
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+      dry_run:
+        description: 'Only dry run deployment?'
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   lint:
@@ -13,7 +28,7 @@ jobs:
       build_id: ${{ steps.make_id.outputs.build_id }}
     steps:
       - name: Get the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Run the linter
         run: npm run lint
@@ -33,10 +48,10 @@ jobs:
 
     steps:
       - name: Get the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node }}
           cache: 'npm'
@@ -48,7 +63,7 @@ jobs:
         run: npm test > test-output.txt
 
       - name: Upload the test output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results-${{ matrix.os }}-node${{ matrix.node }}
           path: test-output.txt
@@ -58,7 +73,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download every artifact from this run
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: all-results
 
@@ -75,3 +90,24 @@ jobs:
           echo "### Artifacts collected" >> "$S"
           ls all-results | sed 's/^/- /' >> "$S"
 
+  deploy:
+    needs: report
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show what I was asked to do
+        run: |
+          echo "Target: ${{ inputs.target }}"
+          echo "Dry run: ${{ inputs.dry_run }}"
+
+      - name: Pretend to deploy
+        if: ${{ inputs.dry_run }}
+        run: echo "DRY RUN - nothing was really deployed."
+
+      - name: Really deploy
+        if: ${{ !inputs.dry_run }}
+        env:
+          API_KEY: ${{ secrets.FAKE_API_KEY }}
+        run: |
+          echo "Deploying to ${{ inputs.target }} ..."
+          echo "The key I was given is ${#API_KEY} characters long."
