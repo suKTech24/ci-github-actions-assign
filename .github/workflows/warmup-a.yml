@@ -12,7 +12,7 @@ jobs:
         run: echo "Hello from the first job"
 
   second-job:
-    needs: first-jobb
+    needs: first-job
     runs-on: ubuntu-22.04
     steps:
       - name: Say goodbye
