@@ -1,0 +1,30 @@
+name: CI Advanced
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v7
+
+      - name: Run the linter
+        run: npm run lint
+
+      - name: Leave a note on this machine
+        run: echo "the lint job was here" > /tmp/note.txt
+
+  test:
+    needs: lint
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v7
+
+      - name: Look for the note the lint job left
+        run: cat /tmp/note.txt
