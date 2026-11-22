@@ -28,7 +28,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node: ['18', '20', '22']
+        node: [ '22', '24']
       fail-fast: false
 
     steps:
@@ -62,7 +62,16 @@ jobs:
         with:
           path: all-results
 
-      - name: Show what we collected
+      - name: Write the report
         run: |
-          echo "Build ID from the lint job: ${{ needs.lint.outputs.build_id }}"
-          ls -R all-results
+          S="$GITHUB_STEP_SUMMARY"
+          echo "## CI Report" >> "$S"
+          echo "" >> "$S"
+          echo "- Build ID: ${{ needs.lint.outputs.build_id }}" >> "$S"
+          echo "- Commit: ${{ github.sha }}" >> "$S"
+          echo "- Started by: ${{ github.actor }}" >> "$S"
+          echo "- Branch: ${{ github.ref_name }}" >> "$S"
+          echo "" >> "$S"
+          echo "### Artifacts collected" >> "$S"
+          ls all-results | sed 's/^/- /' >> "$S"
+
