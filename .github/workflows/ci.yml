@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: 'Where should we deploy?'
+        description: 'Where should we deploy? Testing'
         required: true
         type: choice
         options:
