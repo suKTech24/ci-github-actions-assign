@@ -9,15 +9,18 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-22.04
+    outputs:
+      build_id: ${{ steps.make_id.outputs.build_id }}
     steps:
       - name: Get the code
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Run the linter
         run: npm run lint
 
-      - name: Leave a note on this machine
-        run: echo "the lint job was here" > /tmp/note.txt
+      - name: Create a build ID
+        id: make_id
+        run: echo "build_id=build-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
 
   test:
     needs: lint
@@ -26,6 +29,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         node: ['18', '20', '22']
+      fail-fast: false
+
     steps:
       - name: Get the code
         uses: actions/checkout@v4
@@ -45,5 +50,19 @@ jobs:
       - name: Upload the test output
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.os }}-node${{ matrix.node }}
           path: test-output.txt
+
+  report:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download every artifact from this run
+        uses: actions/download-artifact@v4
+        with:
+          path: all-results
+
+      - name: Show what we collected
+        run: |
+          echo "Build ID from the lint job: ${{ needs.lint.outputs.build_id }}"
+          ls -R all-results
